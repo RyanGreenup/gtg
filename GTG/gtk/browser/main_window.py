@@ -1285,9 +1285,12 @@ class MainWindow(Gtk.ApplicationWindow):
     def apply_filter_on_panes(self, filter_name, refresh=True, parameters=None):
         """ Apply filters for every pane: active tasks, closed tasks """
 
+        current_pane = self.get_selected_pane()
         for pane in self.vtree_panes:
             vtree = self.req.get_tasks_tree(name=pane, refresh=False)
-            vtree.apply_filter(filter_name, refresh=refresh, parameters=parameters)
+            vtree.apply_filter(filter_name,
+                               refresh=current_pane == pane,
+                               parameters=parameters)
 
     def unapply_filter_on_panes(self, filter_name, refresh=True):
         """ Apply filters for every pane: active tasks, closed tasks """
