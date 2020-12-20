@@ -1282,14 +1282,15 @@ class MainWindow(Gtk.ApplicationWindow):
                 task.set_status(Task.STA_DISMISSED)
                 self.close_all_task_editors(uid)
 
-    def apply_filter_on_panes(self, filter_name, refresh=True, parameters=None):
+    def apply_filter_on_panes(self, filter_name,
+                              force_refresh: bool = False, parameters=None):
         """ Apply filters for every pane: active tasks, closed tasks """
 
         current_pane = self.get_selected_pane()
         for pane in self.vtree_panes:
             vtree = self.req.get_tasks_tree(name=pane, refresh=False)
             vtree.apply_filter(filter_name,
-                               refresh=current_pane == pane,
+                               refresh=force_refresh or current_pane == pane,
                                parameters=parameters)
 
     def unapply_filter_on_panes(self, filter_name, refresh=True):
