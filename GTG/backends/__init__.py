@@ -25,12 +25,14 @@ and to read projects from this medium
 import sys
 import uuid
 import os.path
+import logging
 
-from GTG.core.logger import log
 from GTG.core.borg import Borg
 from GTG.backends.generic_backend import GenericBackend
 from GTG.core.dirs import PROJECTS_XMLFILE
 from GTG.core import xml
+
+logger = logging.getLogger(__name__)
 
 
 class BackendFactory(Borg):
@@ -56,7 +58,7 @@ class BackendFactory(Borg):
         backend_files = self._find_backend_files()
         # Create module names
         module_names = [f.replace(".py", "") for f in backend_files]
-        log.debug("Backends found: " + str(module_names))
+        logger.debug("Backends found: %s", module_names)
         # Load backend modules
         for module_name in module_names:
             extended_module_name = "GTG.backends." + module_name
@@ -64,12 +66,13 @@ class BackendFactory(Borg):
                 __import__(extended_module_name)
             except ImportError as exception:
                 # Something is wrong with this backend, skipping
-                log.warning("Backend %s could not be loaded: %s" %
-                            (module_name, str(exception)))
+                logger.warning("Backend %s could not be loaded: %s",
+                               module_name, exception)
                 continue
             except Exception as exception:
                 # Other exception log as errors
-                log.error(f"Malformated backend {module_name}: {str(exception)}")
+                logger.error("Malformated backend %s: %s",
+                             module_name, exception)
                 continue
 
             self.backend_modules[module_name] = \
@@ -92,7 +95,8 @@ class BackendFactory(Borg):
         if backend_name in self.backend_modules:
             return self.backend_modules[backend_name]
         else:
-            log.debug(f"Trying to load backend {backend_name}, but failed!")
+            logger.debug("Trying to load backend %s, but failed!",
+                         backend_name)
             return None
 
     def get_all_backends(self):
@@ -135,10 +139,10 @@ class BackendFactory(Borg):
         Returns the backend instance, or None is something goes wrong
         """
         if "module" not in dic or "xmlobject" not in dic:
-            log.debug(f"Malformed backend configuration found! {dic}")
+            logger.debug("Malformed backend configuration found! %s", dic)
         module = self.get_backend(dic["module"])
         if module is None:
-            log.debug(f"could not load module for backend {dic['module']}")
+            logger.debug("could not load module for backend %s", dic['module'])
             return None
         # we pop the xml object, as it will be redundant when the parameters
         # are set directly in the dict

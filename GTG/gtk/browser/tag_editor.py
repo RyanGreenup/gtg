@@ -22,13 +22,14 @@ tag_editor: this module contains two classes: TagIconSelector and TagEditor.
 - TagEditor is a dialog window used to edit the properties of a tag.
 - TagIconSelector is a popover within that dialog to select an icon.
 """
-
+import logging
 from gi.repository import GObject, Gtk, Gdk, GdkPixbuf
 
 from gettext import gettext as _
 from GTG.gtk.browser.simple_color_selector import SimpleColorSelector
 from GTG.gtk.colors import color_add, color_remove
-from GTG.core.logger import log
+
+logger = logging.getLogger(__name__)
 
 
 class TagIconSelector(Gtk.Window):
@@ -105,7 +106,7 @@ class TagIconSelector(Gtk.Window):
                 img = Gtk.IconTheme.get_default().load_icon(icon, 16, 0)
                 self.symbol_model.append([img, icon])
             except GObject.GError:
-                log.error(f"Failed to load icon '{icon}'")
+                logger.error("Failed to load icon %r", icon)
         self.symbol_iv.set_model(self.symbol_model)
         self.loaded = True
 

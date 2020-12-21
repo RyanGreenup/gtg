@@ -21,12 +21,12 @@
 
 import re
 import html
+import logging
 from time import time
 from uuid import uuid4
 
 from gi.repository import Gtk, GLib, Gdk, GObject
 
-from GTG.core.logger import log
 from GTG.core.requester import Requester
 import GTG.core.urlregex as url_regex
 from webbrowser import open as openurl
@@ -36,6 +36,8 @@ from typing import List
 from GTG.gtk.editor.text_tags import (TitleTag, SubTaskTag, TaskTagTag,
                                       InternalLinkTag, LinkTag, CheckboxTag,
                                       InvisibleTag, SubheadingTag)
+
+logger = logging.getLogger(__name__)
 
 
 # Regex to find GTG's tags.
@@ -171,7 +173,8 @@ class TaskView(Gtk.TextView):
             # Why process if there's nothing to process
             return
 
-        log.debug(f'Processing text buffer after {self.PROCESSING_DELAY} ms')
+        logger.debug('Processing text buffer after %sms',
+                     self.PROCESSING_DELAY)
         bench_start = time()
 
         # Clear all tags first
@@ -218,7 +221,8 @@ class TaskView(Gtk.TextView):
         for tasktag in prev_tasktags.difference(self.task_tags):
             self.remove_tasktag_cb(tasktag)
 
-        log.debug(f'Processed in {(time() - bench_start) * 1000:.2} ms')
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug('Processed in %.2fms', (time() - bench_start) * 1000)
 
         self.buffer.set_modified(False)
         self.save_cb()
@@ -356,7 +360,7 @@ class TaskView(Gtk.TextView):
         task = self.req.get_task(tid)
 
         if not task:
-            log.warn(f'Failed to toggle status for {tid}')
+            logger.warn('Failed to toggle status for %s', tid)
             return
 
         task.toggle_status()
@@ -791,7 +795,7 @@ class TaskView(Gtk.TextView):
 
         # Check if the task exists first
         if not self.req.has_task(tid):
-            log.debug(f'Task {tid} not found')
+            logger.debug('Task %s not found', tid)
             return
 
         if line is not None:

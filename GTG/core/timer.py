@@ -20,9 +20,11 @@
 
 import datetime
 import re
+import logging
 
 from gi.repository import GObject, Gio
-from GTG.core.logger import log
+
+logger = logging.getLogger(__name__)
 
 
 class Timer(GObject.GObject):
@@ -62,7 +64,8 @@ class Timer(GObject.GObject):
         """Handle dbus prepare for sleep signal."""
 
         sleeping = parameters[0]
-        log.debug(f"Received dbus signal {signal_name}{parameters} for Timer")
+        logger.debug("Received dbus signal %s%s for Timer",
+                     signal_name, parameters)
 
         # Only emit the signal if we are resuming from suspend,
         # not preparing for it.
@@ -95,8 +98,8 @@ class Timer(GObject.GObject):
             return datetime.time(int(self.config.get('hour')),
                                  int(self.config.get('min')))
         except(ValueError):
-            log.error("Invalid time values: %s:%s", self.config.get('hour'),
-                      self.config.get('min'))
+            logger.error("Invalid time values: %s:%s", self.config.get('hour'),
+                         self.config.get('min'))
             return datetime.time(0, 0)
 
     def parse_time(self, time):

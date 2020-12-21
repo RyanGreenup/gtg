@@ -23,10 +23,11 @@ Classes responsible for handling user configuration
 import configparser
 import os
 import re
+import logging
 
 from GTG.core.dirs import CONFIG_DIR
-from GTG.core.logger import log
 
+logger = logging.getLogger(__name__)
 DEFAULTS = {
     'browser': {
         "bg_color_enable": True,
@@ -86,7 +87,7 @@ def open_config_file(config_file):
     try:
         config.read(config_file)
     except configparser.Error as e:
-        log.warning("Problem with opening file %s: %s", config_file, e)
+        logger.warning("Problem with opening file %s: %s", config_file, e)
     return config
 
 
@@ -150,8 +151,8 @@ class SectionConfig():
         """
         default_value = self._defaults.get(option)
         if default_value is None:
-            log.warning(
-                'No default value for %s in %s', option, self._section_name)
+            logger.warning('No default value for %s in %s',
+                           option, self._section_name)
 
         get_function = self._type_function(default_value)
 
@@ -159,7 +160,7 @@ class SectionConfig():
             value = get_function(option)
         except ValueError as e:
             value = None
-            log.warning(
+            logger.warning(
                 'Invalid configuration value "%s" for %s in %s: %s',
                 self._section.get(option), option, self._section_name, e)
 

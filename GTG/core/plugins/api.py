@@ -18,9 +18,10 @@
 
 import os
 import pickle
-
+import logging
 from GTG.core.dirs import plugin_configuration_dir
-from GTG.core.logger import log
+
+logger = logging.getLogger(__name__)
 
 
 class PluginAPI():
@@ -174,7 +175,8 @@ class PluginAPI():
                 if wi and widg_id in self.taskwidget_widg:
                     wi.remove(self.taskwidget_widg.pop(widg_id))
             except Exception as e:
-                log.debug(f"Error removing the toolbar item in the TaskEditor:{e}")
+                logger.debug("Error removing the toolbar item in the "
+                             "TaskEditor: %r", e)
 
     def set_bgcolor_func(self, func=None):
         """ Set a function which defines a background color for each task

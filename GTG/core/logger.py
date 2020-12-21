@@ -29,7 +29,7 @@ GTG modules and plugins that wish to use logging should import the log object::
 import logging
 
 
-log = logging.getLogger('gtg')
+log = logging.getLogger('GTG')
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)

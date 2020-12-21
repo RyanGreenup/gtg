@@ -18,8 +18,10 @@
 
 from gi.repository import GObject, GLib, Gtk, Gdk
 import cairo
+import logging
 
-from GTG.core.logger import log
+logger = logging.getLogger(__name__)
+
 
 
 class CellRendererTags(Gtk.CellRenderer):
@@ -159,7 +161,7 @@ class CellRendererTags(Gtk.CellRenderer):
                     # (e.g. wrong set icon path, missing icon)
                     # Raising an exception breaks UI and signal catcher badly
                     if my_tag_icon not in self._ignore_icon_error_for:
-                        log.error(f"Can't load icon '{my_tag_icon}': {e}")
+                        logger.error("Can't load icon %r: %s", my_tag_icon, e)
                         self._ignore_icon_error_for.add(my_tag_icon)
 
             elif my_tag_color:

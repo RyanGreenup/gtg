@@ -22,6 +22,7 @@ Contains the Datastore object, which is the manager of all the active backends
 
 from collections import deque
 import threading
+import logging
 import uuid
 
 from GTG.backends.backend_signals import BackendSignals
@@ -35,11 +36,11 @@ from GTG.core.task import Task
 from GTG.core.treefactory import TreeFactory
 from GTG.core import xml
 from GTG.core.borg import Borg
-from GTG.core.logger import log, log_debug_enabled
 
 from lxml import etree
 
 
+logger = logging.getLogger(__name__)
 TAG_XMLROOT = "tagstore"
 
 
@@ -134,7 +135,8 @@ class DataStore():
         try:
             parameters = parse_search_query(query)
         except InvalidQuery as e:
-            log.warning(f"Problem with parsing query '{query}' (skipping): {e.message}")
+            logger.warning("Problem with parsing query %r (skipping): %s",
+                           query, e.message)
             return None
 
         # Create own copy of attributes and add special attributes label, query
@@ -312,7 +314,7 @@ class DataStore():
         if self.has_task(tid):
             return self._tasks.get_node(tid)
         else:
-            # log.error("requested non-existent task %s" % tid)
+            # logger.error("requested non-existent task %s", tid)
             # This is not an error: it is normal to request a task which
             # might not exist yet.
             return None
@@ -405,12 +407,12 @@ class DataStore():
         """
         if "backend" in backend_dic:
             if "pid" not in backend_dic:
-                log.error("registering a backend without pid.")
+                logger.error("registering a backend without pid.")
                 return None
             backend = backend_dic["backend"]
             # Checking that is a new backend
             if backend.get_id() in self.backends:
-                log.error("registering already registered backend")
+                logger.error("registering already registered backend")
                 return None
             # creating the TaskSource which will wrap the backend,
             # filtering the tasks that should hit the backend.
@@ -437,7 +439,7 @@ class DataStore():
                 source.start_get_tasks()
             return source
         else:
-            log.error("Tried to register a backend without a  pid")
+            logger.error("Tried to register a backend without a pid")
 
     def _activate_non_default_backends(self, sender=None):
         """
@@ -448,7 +450,7 @@ class DataStore():
         @param sender: not used, just here for signal compatibility
         """
         if self.is_default_backend_loaded:
-            log.debug("spurious call")
+            logger.debug("spurious call")
             return
 
         self.is_default_backend_loaded = True
@@ -598,8 +600,8 @@ class DataStore():
                     alive = thread.is_alive()
 
                 if alive:
-                    log.error("The %s backend stalled while quitting",
-                              backend_id)
+                    logger.error("The %s backend stalled while quitting",
+                                 backend_id)
 
         # we save the parameters
         for b in self.get_all_backends(disabled=True):
@@ -664,7 +666,7 @@ class TaskSource():
         self.to_remove = deque()
         self.please_quit = False
         self.task_filter = self.get_task_filter_for_backend()
-        if log_debug_enabled():
+        if logger.isEnabledFor(logging.DEBUG):
             self.timer_timestep = 5
         else:
             self.timer_timestep = 1
