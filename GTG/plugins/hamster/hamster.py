@@ -19,15 +19,17 @@
 import datetime
 import os
 import time
+import logging
 from calendar import timegm
 from gettext import gettext as _
 
 import dbus
 from gi.repository import Gtk
 
-from GTG.core.logger import log
 from GTG.core.task import Task
 from GTG.plugins.hamster.helper import FactBuilder
+
+logger = logging.getLogger(__name__)
 
 
 class HamsterPlugin():

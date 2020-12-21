@@ -129,12 +129,11 @@ class Application(Gtk.Application):
         """Callback when opening files/tasks"""
 
         self.init_shared()
-
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("Received %d Task URIs", len(files))
-        if len(files) != n_files:
+        len_files = len(files)
+        logger.debug("Received %d Task URIs", len_files)
+        if len_files != n_files:
             logger.warning("Length of files %d != supposed length %d",
-                           len(files), n_files)
+                           len_files, n_files)
 
         for file in files:
             if file.get_uri_scheme() == 'gtg':
@@ -576,11 +575,18 @@ class Application(Gtk.Application):
     # MISC
     # --------------------------------------------------------------------------
 
-    def set_debug_flag(self, debug):
+    @staticmethod
+    def set_logging(debug: bool = False):
         """Set whenever it should activate debug stuff like logging or not"""
+        level = logging.DEBUG if debug else logging.INFO
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - "
+                                      "%(module)s:%(funcName)s:%(lineno)d - "
+                                      "%(message)s")
+        handler.setFormatter(formatter)
+        logger_ = logging.getLogger('GTG')
+        handler.setLevel(level)
+        logger_.addHandler(handler)
+        logger_.setLevel(level)
         if debug:
-            logger.setLevel(logging.DEBUG)
-            logger.debug("Debug output enabled.")
-        else:
-            logger.setLevel(logging.INFO)
-
+            logger_.debug("Debug output enabled.")
