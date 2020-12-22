@@ -117,9 +117,8 @@ class Plugin():
                 # no dependencies in info file; use the ImportError instead
                 self.missing_modules.append(str(e).split(" ")[3])
             self.error = True
-        except Exception as e:
-            # load_module() failed for some other reason
-            logger.error(e)
+        except Exception:
+            logger.exception("load_module() failed for some other reason:")
             self.error = True
 
     def reload(self, module_paths):

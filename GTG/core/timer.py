@@ -97,7 +97,7 @@ class Timer(GObject.GObject):
         try:
             return datetime.time(int(self.config.get('hour')),
                                  int(self.config.get('min')))
-        except(ValueError):
+        except ValueError:
             logger.error("Invalid time values: %s:%s", self.config.get('hour'),
                          self.config.get('min'))
             return datetime.time(0, 0)

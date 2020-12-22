@@ -174,9 +174,9 @@ class PluginAPI():
                 wi = self.__builder.get_object('vbox4')
                 if wi and widg_id in self.taskwidget_widg:
                     wi.remove(self.taskwidget_widg.pop(widg_id))
-            except Exception as e:
-                logger.debug("Error removing the toolbar item in the "
-                             "TaskEditor: %r", e)
+            except Exception:
+                logger.exception("Error removing the toolbar item in the "
+                                 "TaskEditor:")
 
     def set_bgcolor_func(self, func=None):
         """ Set a function which defines a background color for each task

@@ -58,7 +58,7 @@ class BackendFactory(Borg):
         backend_files = self._find_backend_files()
         # Create module names
         module_names = [f.replace(".py", "") for f in backend_files]
-        logger.debug("Backends found: %s", module_names)
+        logger.debug("Backends found: %r", module_names)
         # Load backend modules
         for module_name in module_names:
             extended_module_name = "GTG.backends." + module_name
@@ -66,13 +66,12 @@ class BackendFactory(Borg):
                 __import__(extended_module_name)
             except ImportError as exception:
                 # Something is wrong with this backend, skipping
-                logger.warning("Backend %s could not be loaded: %s",
+                logger.warning("Backend %s could not be loaded: %r",
                                module_name, exception)
                 continue
             except Exception as exception:
                 # Other exception log as errors
-                logger.error("Malformated backend %s: %s",
-                             module_name, exception)
+                logger.exception("Malformated backend %s:", module_name)
                 continue
 
             self.backend_modules[module_name] = \
@@ -139,10 +138,10 @@ class BackendFactory(Borg):
         Returns the backend instance, or None is something goes wrong
         """
         if "module" not in dic or "xmlobject" not in dic:
-            logger.debug("Malformed backend configuration found! %s", dic)
+            logger.debug("Malformed backend configuration found! %r", dic)
         module = self.get_backend(dic["module"])
         if module is None:
-            logger.debug("could not load module for backend %s", dic['module'])
+            logger.debug("could not load module for backend %r", dic['module'])
             return None
         # we pop the xml object, as it will be redundant when the parameters
         # are set directly in the dict
