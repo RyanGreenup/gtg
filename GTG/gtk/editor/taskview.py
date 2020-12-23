@@ -173,9 +173,11 @@ class TaskView(Gtk.TextView):
             # Why process if there's nothing to process
             return
 
-        logger.debug('Processing text buffer after %sms',
-                     self.PROCESSING_DELAY)
-        bench_start = time()
+        bench_start = 0
+        if logger.isEnabledFor(logging.DEBUG)
+            logger.debug('Processing text buffer after %dms',
+                         self.PROCESSING_DELAY)
+            bench_start = time()
 
         # Clear all tags first
         [self.table.remove(t) for t in self.tags_applied]
