@@ -139,7 +139,7 @@ class MainWindow(Gtk.ApplicationWindow):
         app.timer.connect('refresh', self.refresh_all_views)
         app.timer.connect('refresh', self._set_defer_days)
 
-        self.stack_switcher.get_stack().connect('notify::visible-child', self._save_view_pane)
+        self.stack_switcher.get_stack().connect('notify::visible-child', self.on_pane_switch)
 
         # This needs to be called again after setting everything up,
         # so the buttons start disabled
@@ -1327,8 +1327,9 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.applied_tags = new_taglist
 
-    def _save_view_pane(self, obj, pspec):
+    def on_pane_switch(self, obj, pspec):
         self.config.set('view', self.get_selected_pane())
+        self.on_select_tag()
 
 # PUBLIC METHODS ###########################################################
     def have_same_parent(self):
