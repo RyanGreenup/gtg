@@ -1284,12 +1284,12 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def apply_filter_on_panes(self, filter_name,
                               force_refresh: bool = False, parameters=None):
-        """ Apply filters for every pane: active, actionnable, and closed.
-        Ask for refresh on current pane.
+        """ Apply given filter for every pane: active, actionnable, and closed.
+        Ask for refresh only on current pane, unless `force_refresh`
+        is specified.
 
         @param force_refresh: bool, will ask for refresh on _every_ pane
         """
-
         current_pane = self.get_selected_pane()
         for pane in self.vtree_panes:
             vtree = self.req.get_tasks_tree(name=pane, refresh=False)
@@ -1329,6 +1329,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_pane_switch(self, obj, pspec):
         self.config.set('view', self.get_selected_pane())
+        # re-applying filters dependings on selected tags
+        # trusting liblarch to limit workload on already applied filter
         self.on_select_tag()
 
 # PUBLIC METHODS ###########################################################
