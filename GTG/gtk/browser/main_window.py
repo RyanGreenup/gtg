@@ -68,7 +68,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.app = app
         self.config = self.req.get_config('browser')
         self.tag_active = False
-        self.applied_tags = []
 
         # Treeviews handlers
         self.vtree_panes = {}
@@ -1282,56 +1281,36 @@ class MainWindow(Gtk.ApplicationWindow):
                 task.set_status(Task.STA_DISMISSED)
                 self.close_all_task_editors(uid)
 
-    def apply_filter_on_panes(self, filter_name,
-                              force_refresh: bool = False, parameters=None):
-        """ Apply given filter for every pane: active, actionnable, and closed.
-        Ask for refresh only on current pane, unless `force_refresh`
-        is specified.
-
-        @param force_refresh: bool, will ask for refresh on _every_ pane
-        """
-        current_pane = self.get_selected_pane()
-        for pane in self.vtree_panes:
-            vtree = self.req.get_tasks_tree(name=pane, refresh=False)
-            vtree.apply_filter(filter_name,
-                               refresh=force_refresh or current_pane == pane,
-                               parameters=parameters)
-
-    def unapply_filter_on_panes(self, filter_name, refresh=True):
-        """ Apply filters for every pane: active tasks, closed tasks """
-        for pane in self.vtree_panes:
-            vtree = self.req.get_tasks_tree(name=pane, refresh=False)
-            vtree.unapply_filter(filter_name, refresh=refresh)
-
     def on_select_tag(self, widget=None, row=None, col=None):
+        """ Callback for tag(s) selection from left sidebar.
+
+        Using liblarch built-in cache.
+        Optim: reseting it on first item, allows trigger refresh on last.
         """
-        callback for when selecting an element of the tagtree (left sidebar)
-        """
-        # FIXME add support for multiple selection of tags in future
-
-        # When you click on a tag, you want to unselect the tasks
-        new_taglist = self.get_selected_tags()
-
-        for tagname in self.applied_tags:
-            if tagname not in new_taglist:
-                self.unapply_filter_on_panes(tagname, refresh=False)
-
-        for tagname in new_taglist:
-            if tagname not in self.applied_tags:
-                self.apply_filter_on_panes(tagname)
-                # In case of search tag, set query in quickadd for
-                # refining search query
-                tag = self.req.get_tag(tagname)
-                if tag.is_search_tag():
-                    self.quickadd_entry.set_text(tag.get_attribute("query"))
-
-        self.applied_tags = new_taglist
+        filters = self.get_selected_tags()
+        current_pane = self.get_selected_pane()
+        filters.append(current_pane)
+        vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
+        for filter_ in filters:
+            is_first = filter_ == filters[0]
+            is_last = filter_ == filters[-1]
+            vtree.apply_filter(filter_, reset=is_first, refresh=is_last)
 
     def on_pane_switch(self, obj, pspec):
-        self.config.set('view', self.get_selected_pane())
-        # re-applying filters dependings on selected tags
-        # trusting liblarch to limit workload on already applied filter
-        self.on_select_tag()
+        """ Callback for pane switching.
+        No reset of filters, allows trigger refresh on last tag filtering.
+        """
+        current_pane = self.get_selected_pane()
+        self.config.set('view', current_pane)
+
+        filters = self.get_selected_tags()
+        filters.append(current_pane)
+        vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
+        if sorted(filters) != sorted(vtree.list_applied_filters()):
+            vtree.reset_filters(refresh=False)
+        for filter_ in filters:
+            is_last = filter_ == filters[-1]
+            vtree.apply_filter(filter_, refresh=is_last)
 
 # PUBLIC METHODS ###########################################################
     def have_same_parent(self):
