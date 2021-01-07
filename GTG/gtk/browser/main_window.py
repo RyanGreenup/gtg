@@ -431,7 +431,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.search_button.set_active(False)
             self.searchbar.set_search_mode(False)
             self.search_entry.set_text('')
-            self.unapply_filter_on_panes(SEARCH_TAG, refresh=True)
+            self.get_selected_tree().unapply_filter(SEARCH_TAG)
         else:
             self.search_button.set_active(True)
             self.searchbar.set_search_mode(True)
@@ -439,14 +439,14 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_search(self, data):
         query = self.search_entry.get_text()
-        log.debug(f"Searching for '{query}'")
+        log.debug("Searching for %r", query)
 
+        vtree = self.get_selected_tree()
         try:
-            parsed_query = parse_search_query(query)
-            self.apply_filter_on_panes(SEARCH_TAG, parameters=parsed_query)
-        except InvalidQuery as e:
-            self.unapply_filter_on_panes(SEARCH_TAG, refresh=True)
-            log.debug(f"Invalid query '{query}' : '{e}'")
+            vtree.apply_filter(SEARCH_TAG, parse_search_query(query))
+        except InvalidQuery:
+            log.debug("Invalid query %r", query)
+            vtree.apply_filter(SEARCH_TAG)
 
     def on_save_search(self, action, param):
         query = self.search_entry.get_text()
@@ -458,7 +458,7 @@ class MainWindow(Gtk.ApplicationWindow):
         if self.tagtreeview is not None:
             self.select_search_tag(tag_id)
         else:
-            self.apply_filter_on_panes(tag_id)
+            self.get_selected_tree().apply_filter(tag_id)
 
     def select_search_tag(self, tag_id):
         tag = self.req.get_tag(tag_id)
@@ -1339,6 +1339,10 @@ class MainWindow(Gtk.ApplicationWindow):
         current = self.stack_switcher.get_stack().get_visible_child_name()
 
         return PANE_STACK_NAMES_MAP[current]
+
+    def get_selected_tree(self, refresh: bool = False):
+        return self.req.get_tasks_tree(name=self.get_selected_pane(),
+                                       refresh=refresh)
 
     def get_selected_task(self, tv=None):
         """
