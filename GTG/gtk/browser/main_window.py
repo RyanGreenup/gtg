@@ -1284,27 +1284,34 @@ class MainWindow(Gtk.ApplicationWindow):
                 task.set_status(Task.STA_DISMISSED)
                 self.close_all_task_editors(uid)
 
+    def _reapply_filter(self, current_pane):
+        filters = self.get_selected_tags()
+        filters.append(current_pane)
+        vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
+        # Re-applying search if some search is specified
+        search = self.search_entry.get_text()
+        if search:
+            filters.append(SEARCH_TAG)
+        # only reseting filters if applieds filters are different from current
+        # ones, leaving a chance for liblarch to make the good call on wether
+        # to refilter or not
+        if sorted(filters) != sorted(vtree.list_applied_filters()):
+            vtree.reset_filters(refresh=False)
+        # browsing and applying filters
+        for filter_ in filters:
+            is_last = filter_ == filters[-1]
+            if filter_ == SEARCH_TAG:
+                self._try_filter_by_query(search, refresh=is_last)
+            else:
+                vtree.apply_filter(filter_, refresh=is_last)
+
     def on_select_tag(self, widget=None, row=None, col=None):
         """ Callback for tag(s) selection from left sidebar.
 
         Using liblarch built-in cache.
         Optim: reseting it on first item, allows trigger refresh on last.
         """
-        filters = self.get_selected_tags()
-        current_pane = self.get_selected_pane()
-        filters.append(current_pane)
-        vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
-        search = self.search_entry.get_text()
-        if search:  # re-applying search if active
-            filters.append(SEARCH_TAG)
-        for filter_ in filters:
-            is_first = filter_ == filters[0]
-            is_last = filter_ == filters[-1]
-            if filter_ == SEARCH_TAG:
-                self._try_filter_by_query(search,
-                                          reset=is_first, refresh=is_last)
-            else:
-                vtree.apply_filter(filter_, reset=is_first, refresh=is_last)
+        self._reapply_filter(self.get_selected_pane())
 
     def on_pane_switch(self, obj, pspec):
         """ Callback for pane switching.
@@ -1312,22 +1319,7 @@ class MainWindow(Gtk.ApplicationWindow):
         """
         current_pane = self.get_selected_pane()
         self.config.set('view', current_pane)
-
-        filters = self.get_selected_tags()
-        filters.append(current_pane)
-        vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
-        search = self.search_entry.get_text()
-        if search:  # re-applying search if active
-            filters.append(SEARCH_TAG)
-        if sorted(filters) != sorted(vtree.list_applied_filters()):
-            vtree.reset_filters(refresh=False)
-
-        for filter_ in filters:
-            is_last = filter_ == filters[-1]
-            if filter_ == SEARCH_TAG:
-                self._try_filter_by_query(search, refresh=is_last)
-            else:
-                vtree.apply_filter(filter_, reset=False, refresh=is_last)
+        self._reapply_filter(current_pane)
 
 # PUBLIC METHODS ###########################################################
     def have_same_parent(self):
