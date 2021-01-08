@@ -426,7 +426,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.on_search_toggled()
 
     def on_search_toggled(self, widget=None):
-
         if self.searchbar.get_search_mode():
             self.search_button.set_active(False)
             self.searchbar.set_search_mode(False)
@@ -437,16 +436,20 @@ class MainWindow(Gtk.ApplicationWindow):
             self.searchbar.set_search_mode(True)
             self.search_entry.grab_focus()
 
+    def _try_filter_by_query(self, query,
+                             reset: bool = False, refresh: bool = True):
+        vtree = self.get_selected_tree()
+        try:
+            vtree.apply_filter(SEARCH_TAG, parse_search_query(query),
+                               reset=reset, refresh=refresh)
+        except InvalidQuery:
+            log.debug("Invalid query %r", query)
+            vtree.unapply_filter(SEARCH_TAG)
+
     def on_search(self, data):
         query = self.search_entry.get_text()
         log.debug("Searching for %r", query)
-
-        vtree = self.get_selected_tree()
-        try:
-            vtree.apply_filter(SEARCH_TAG, parse_search_query(query))
-        except InvalidQuery:
-            log.debug("Invalid query %r", query)
-            vtree.apply_filter(SEARCH_TAG)
+        self._try_filter_by_query(query)
 
     def on_save_search(self, action, param):
         query = self.search_entry.get_text()
@@ -1291,10 +1294,17 @@ class MainWindow(Gtk.ApplicationWindow):
         current_pane = self.get_selected_pane()
         filters.append(current_pane)
         vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
+        search = self.search_entry.get_text()
+        if search:  # re-applying search if active
+            filters.append(SEARCH_TAG)
         for filter_ in filters:
             is_first = filter_ == filters[0]
             is_last = filter_ == filters[-1]
-            vtree.apply_filter(filter_, reset=is_first, refresh=is_last)
+            if filter_ == SEARCH_TAG:
+                self._try_filter_by_query(search,
+                                          reset=is_first, refresh=is_last)
+            else:
+                vtree.apply_filter(filter_, reset=is_first, refresh=is_last)
 
     def on_pane_switch(self, obj, pspec):
         """ Callback for pane switching.
@@ -1306,11 +1316,18 @@ class MainWindow(Gtk.ApplicationWindow):
         filters = self.get_selected_tags()
         filters.append(current_pane)
         vtree = self.req.get_tasks_tree(name=current_pane, refresh=False)
+        search = self.search_entry.get_text()
+        if search:  # re-applying search if active
+            filters.append(SEARCH_TAG)
         if sorted(filters) != sorted(vtree.list_applied_filters()):
             vtree.reset_filters(refresh=False)
+
         for filter_ in filters:
             is_last = filter_ == filters[-1]
-            vtree.apply_filter(filter_, refresh=is_last)
+            if filter_ == SEARCH_TAG:
+                self._try_filter_by_query(search, refresh=is_last)
+            else:
+                vtree.apply_filter(filter_, reset=False, refresh=is_last)
 
 # PUBLIC METHODS ###########################################################
     def have_same_parent(self):
