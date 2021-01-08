@@ -1309,6 +1309,14 @@ class MainWindow(Gtk.ApplicationWindow):
         Using liblarch built-in cache.
         Optim: reseting it on first item, allows trigger refresh on last.
         """
+        for tagname in self.get_selected_tags():
+            # In case of search tag, set query in quickadd for
+            # refining search query
+            tag = self.req.get_tag(tagname)
+            if tag.is_search_tag():
+                self.quickadd_entry.set_text(tag.get_attribute("query"))
+                break
+
         self._reapply_filter(self.get_selected_pane())
 
     def on_pane_switch(self, obj, pspec):
