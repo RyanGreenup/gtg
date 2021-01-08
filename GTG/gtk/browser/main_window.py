@@ -436,20 +436,18 @@ class MainWindow(Gtk.ApplicationWindow):
             self.searchbar.set_search_mode(True)
             self.search_entry.grab_focus()
 
-    def _try_filter_by_query(self, query,
-                             reset: bool = False, refresh: bool = True):
+    def _try_filter_by_query(self, query, refresh: bool = True):
+        log.debug("Searching for %r", query)
         vtree = self.get_selected_tree()
         try:
             vtree.apply_filter(SEARCH_TAG, parse_search_query(query),
-                               reset=reset, refresh=refresh)
+                               refresh=refresh)
         except InvalidQuery:
             log.debug("Invalid query %r", query)
             vtree.unapply_filter(SEARCH_TAG)
 
     def on_search(self, data):
-        query = self.search_entry.get_text()
-        log.debug("Searching for %r", query)
-        self._try_filter_by_query(query)
+        self._try_filter_by_query(self.search_entry.get_text())
 
     def on_save_search(self, action, param):
         query = self.search_entry.get_text()
