@@ -1295,7 +1295,8 @@ class MainWindow(Gtk.ApplicationWindow):
         # whether to refilter or not
         if sorted(filters) != sorted(vtree.list_applied_filters()):
             vtree.reset_filters(refresh=False)
-        # browsing and applying filters
+        # Browsing and applying filters. For performance optimization, only
+        # allowing liblarch to trigger a refresh on last item.
         for filter_ in filters:
             is_last = filter_ == filters[-1]
             if filter_ == SEARCH_TAG:
