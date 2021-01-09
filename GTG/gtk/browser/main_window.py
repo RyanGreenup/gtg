@@ -1299,12 +1299,12 @@ class MainWindow(Gtk.ApplicationWindow):
         # allowing liblarch to trigger a refresh on last item. This way the
         # refresh is never triggered more than once and we let the possibility
         # to liblarch not to trigger refresh is filters did not change.
-        for filter_ in filters:
-            is_last = filter_ == filters[-1]
-            if filter_ == SEARCH_TAG:
+        for filter_name in filters:
+            is_last = filter_name == filters[-1]
+            if filter_name == SEARCH_TAG:
                 self._try_filter_by_query(search, refresh=is_last)
             else:
-                vtree.apply_filter(filter_, refresh=is_last)
+                vtree.apply_filter(filter_name, refresh=is_last)
 
     def on_select_tag(self, widget=None, row=None, col=None):
         """ Callback for tag(s) selection from left sidebar.
