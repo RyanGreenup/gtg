@@ -442,8 +442,8 @@ class MainWindow(Gtk.ApplicationWindow):
         try:
             vtree.apply_filter(SEARCH_TAG, parse_search_query(query),
                                refresh=refresh)
-        except InvalidQuery:
-            log.debug("Invalid query %r", query)
+        except InvalidQuery as error:
+            log.debug("Invalid query %r: %r", query, error)
             vtree.unapply_filter(SEARCH_TAG)
 
     def on_search(self, data):
