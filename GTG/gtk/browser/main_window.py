@@ -1290,9 +1290,9 @@ class MainWindow(Gtk.ApplicationWindow):
         search = self.search_entry.get_text()
         if search:
             filters.append(SEARCH_TAG)
-        # only reseting filters if applieds filters are different from current
-        # ones, leaving a chance for liblarch to make the good call on wether
-        # to refilter or not
+        # only resetting filters if the applied filters are different from
+        # current ones, leaving a chance for liblarch to make the good call on
+        # whether to refilter or not
         if sorted(filters) != sorted(vtree.list_applied_filters()):
             vtree.reset_filters(refresh=False)
         # browsing and applying filters
