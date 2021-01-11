@@ -698,6 +698,8 @@ class Description(Field):
                 try:
                     if result:
                         result += ' '
+                except:
+                    pass
                 new_line += split.strip()
         return new_line
 
