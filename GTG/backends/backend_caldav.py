@@ -695,8 +695,9 @@ class Description(Field):
             if split.startswith(','):  # removing commas
                 split = split[1:]
             if split.strip():
-                if result:
-                    result += ' '
+                try:
+                    if result:
+                        result += ' '
                 new_line += split.strip()
         return new_line
 
